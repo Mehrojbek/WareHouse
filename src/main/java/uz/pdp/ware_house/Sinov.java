@@ -21,16 +21,12 @@ public class Sinov {
     }
 
     public static void main(String[] args) {
-        Category category=new Category();
-        category.setCategory(new Category());
-        category.setActive(true);
-        category.setName("one");
+        ArrayList<Integer> integers=new ArrayList<>();
+        integers.add(1);
+        integers.add(2);
+        integers.add(3);
+        integers.add(4);
 
-        Category category1=new Category();
-        category1.setCategory(new Category());
-        category1.setActive(true);
-        category1.setName("one");
-
-        System.out.println(category.equals(category1));
+        HashSet<Integer> integerHashSet =new HashSet<>(integers);
     }
 }
