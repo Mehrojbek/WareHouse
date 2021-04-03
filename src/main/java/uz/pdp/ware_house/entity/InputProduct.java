@@ -28,4 +28,6 @@ public class InputProduct {
 
     @ManyToOne
     private Input input;
+
+    private boolean active=true;
 }
