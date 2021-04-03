@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uz.pdp.ware_house.entity.Category;
 import uz.pdp.ware_house.repository.SuplierRepository;
 
+import java.sql.Timestamp;
 import java.util.*;
 
 @RestController
@@ -28,5 +29,8 @@ public class Sinov {
         integers.add(4);
 
         HashSet<Integer> integerHashSet =new HashSet<>(integers);
+
+        Timestamp timestamp=new Timestamp(System.currentTimeMillis());
+        System.out.println(timestamp);
     }
 }

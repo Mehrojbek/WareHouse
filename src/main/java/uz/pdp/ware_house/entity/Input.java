@@ -32,5 +32,6 @@ public class Input {
     @Column(unique = true,nullable = false)
     private String code;
 
+    private boolean active=true;
 
 }
