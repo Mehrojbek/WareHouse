@@ -10,5 +10,4 @@ import javax.persistence.Entity;
 @Data
 @Entity
 public class Measurement extends AbsEntity {
-
 }

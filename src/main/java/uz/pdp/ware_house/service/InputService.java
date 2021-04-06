@@ -18,7 +18,9 @@ import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,7 +66,7 @@ public class InputService {
         }
 
         Input input = new Input();
-        input.setDate(new Timestamp(System.currentTimeMillis()));
+        input.setDate(Timestamp.valueOf(LocalDateTime.now(ZoneId.of("Asia/Tashkent"))));
         input.setFactureNumber(inputDto.getFactureNumber());
         input.setCode(maxId.toString());
 
@@ -137,6 +139,6 @@ public class InputService {
         editingInput.setFactureNumber(inputDto.getFactureNumber());
 
         inputRepository.save(editingInput);
-        return new Result("Ombor muvaffaqiyatli o'zgartirildi",true);
+        return new Result("Kirim muvaffaqiyatli o'zgartirildi",true);
     }
 }

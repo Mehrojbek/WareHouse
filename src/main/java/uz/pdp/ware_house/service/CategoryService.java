@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uz.pdp.ware_house.entity.Category;
 import uz.pdp.ware_house.payload.CategoryDto;
+import uz.pdp.ware_house.payload.Deleted;
 import uz.pdp.ware_house.payload.Result;
 import uz.pdp.ware_house.repository.CategoryRepository;
 
@@ -18,24 +19,35 @@ public class CategoryService {
 
     //CREATE
     public Result addCategory(CategoryDto categoryDto){
+        //CHECK SPECIAL_NAME
+        if (categoryDto.getName().startsWith(Deleted.DELETED))
+            return new Result("Categoriya nomi "+Deleted.DELETED+" bilan boshlanmasligi lozim",false);
+
+        //CHECK UNIQUE NAME
+        boolean existsByName = categoryRepository.existsByName(categoryDto.getName());
+        if (existsByName)
+            return new Result("Ushbu kategoriya avval qo'shilgan",false);
+
         Category category=new Category();
         category.setName(categoryDto.getName());
+
         if (categoryDto.getParentCategoryId()!=null){
             Optional<Category> optionalCategory = categoryRepository.findById(categoryDto.getParentCategoryId());
             if (!optionalCategory.isPresent())
                 return new Result("Bunday ota kategoriya topilmadi",false);
 
-            Category parentCategory = optionalCategory.get();
+
 
             //CHECK Parent category IS_ACTIVE
-            if (!parentCategory.isActive())
+            if (!optionalCategory.get().isActive())
                 return new Result("Bu ota kategoriya avval uchirilgan",false);
 
+            Category parentCategory = optionalCategory.get();
+
             //CHECK UNIQUE category_id and category_name
-            boolean existsByNameAndCategoryId = categoryRepository.existsByNameAndCategoryId(categoryDto.getName(),
-                    categoryDto.getParentCategoryId());
+            boolean existsByNameAndCategoryId = categoryRepository.existsByNameAndCategoryId(categoryDto.getName(), categoryDto.getParentCategoryId());
             if (existsByNameAndCategoryId)
-                return new Result("Ushbu ota kategoriyada joriy kategoriya allaqachon yaratilgan",false);
+                    return new Result("Ushbu ota kategoriyada joriy kategoriya allaqachon yaratilgan", false);
 
             category.setCategory(parentCategory);
         }
@@ -64,7 +76,12 @@ public class CategoryService {
         if (!optionalCategory.isPresent())
             return new Result("Ushbu kategoriya topilmadi",false);
         Category category = optionalCategory.get();
+
+        //HOW MANY TIMES DELETED
+        long numberOfDeletedCategory = categoryRepository.countAllByNameStartingWithAndNameEndingWith(Deleted.DELETED, category.getName()) + 1;
+
         category.setActive(false);
+        category.setName(Deleted.DELETED+numberOfDeletedCategory+":"+category.getName());
         categoryRepository.save(category);
         return new Result("Kategoriya muvaffaqiyatli uchirildi",true);
     }
@@ -78,24 +95,32 @@ public class CategoryService {
 
         Category editingCategory = optionalCategory.get();
         editingCategory.setName(categoryDto.getName());
-        editingCategory.setActive(categoryDto.isActive());
-
-        //CHECK HAVE PARENT CATEGORY
-        if (categoryDto.getParentCategoryId()!=null) {
-            Optional<Category> optionalParentCategory = categoryRepository.findById(categoryDto.getParentCategoryId());
-
-        //CHECK PARENT CATEGORY
-            if (!optionalParentCategory.isPresent())
-                return new Result("Ota kategoriya topilmadi",false);
-            Category parentCategory = optionalParentCategory.get();
 
         //CHECK CURRENT NAME EQUALS NEW NAME
-            if (!categoryDto.getName().equals(editingCategory.getName())){
-        //CHECK UNIQUE category_id AND name
+        if (!categoryDto.getName().equals(editingCategory.getName())){
+            //CHECK UNIQUE NAME
+            boolean existsByName = categoryRepository.existsByName(categoryDto.getName());
+            if (existsByName)
+                return new Result("Bu nomdagi categoriya allaqachon mavjud",false);
+        }
+
+
+        //CHECK EDIT CATEGORY
+        if (!categoryDto.getParentCategoryId().equals(editingCategory.getCategory().getId())) {
+            //CHECK HAVE PARENT CATEGORY
+            if (categoryDto.getParentCategoryId() != null) {
+                Optional<Category> optionalParentCategory = categoryRepository.findById(categoryDto.getParentCategoryId());
+
+                //CHECK PARENT CATEGORY
+                if (!optionalParentCategory.isPresent())
+                    return new Result("Ota kategoriya topilmadi", false);
+                Category parentCategory = optionalParentCategory.get();
+
+                //CHECK UNIQUE category_id AND name
                 boolean existsByNameAndCategoryId = categoryRepository.existsByNameAndCategoryId(categoryDto.getName(),
                         categoryDto.getParentCategoryId());
                 if (existsByNameAndCategoryId)
-                    return new Result("Ushbu ota kategoriyada joriy kategoriya mavjud",false);
+                    return new Result("Ushbu ota kategoriyada joriy kategoriya mavjud", false);
                 editingCategory.setCategory(parentCategory);
             }
         }

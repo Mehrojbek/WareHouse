@@ -5,4 +5,5 @@ import uz.pdp.ware_house.entity.WareHouse;
 
 public interface WareHouseRepository extends JpaRepository<WareHouse,Integer> {
     boolean existsByName(String name);
+    long countAllByNameStartingWithAndNameEndingWith(String deleted, String name);
 }

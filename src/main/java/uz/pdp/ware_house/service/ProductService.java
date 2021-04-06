@@ -6,6 +6,7 @@ import uz.pdp.ware_house.entity.Attachment;
 import uz.pdp.ware_house.entity.Category;
 import uz.pdp.ware_house.entity.Measurement;
 import uz.pdp.ware_house.entity.Product;
+import uz.pdp.ware_house.payload.Deleted;
 import uz.pdp.ware_house.payload.ProductDto;
 import uz.pdp.ware_house.payload.Result;
 import uz.pdp.ware_house.repository.AttachmentRepository;
@@ -30,6 +31,11 @@ public class ProductService {
 
     //CREATE
     public Result add(ProductDto productDto){
+        //CHECK SPECIAL NAME
+        if (productDto.getName().startsWith(Deleted.DELETED))
+            return new Result("Mahsulot nomi "+Deleted.DELETED+" bilan boshlanmasligi lozim",false);
+
+        //CHECK UNIQUE NAME AND CATEGORY_ID
         boolean existsByNameAndCategoryId = productRepository.existsByNameAndCategoryId(productDto.getName(), productDto.getCategoryId());
         if (existsByNameAndCategoryId)
             return new Result("Ushbu mahsulot bu kategoriyada mavjud",false);
@@ -53,7 +59,6 @@ public class ProductService {
         if (!optionalPhoto.isPresent())
             return new Result("Bunday surat topilmadi",false);
 
-
         //CREATE code
         Integer maxId = productRepository.getMaxId();
         if (maxId==null){
@@ -76,36 +81,40 @@ public class ProductService {
 
 
     //READ ALL
-    public List<Product> getProductList(){
+    public List<Product> getAll(){
         return productRepository.findAll();
     }
 
 
     //READ ONE
-    public Result getProduct(Integer id){
+    public Result getOne(Integer id){
         Optional<Product> optionalProduct = productRepository.findById(id);
-        if (optionalProduct.isPresent()) {
-            Product product = optionalProduct.get();
-            return new Result("Muvaffaqiyatli bajarildi",true,product);
-        }
-        return new Result("Mahsulot topilmadi",false);
+        if (!optionalProduct.isPresent())
+            return new Result("Mahsulot topilmadi",false);
+
+        return new Result("Muvaffaqiyatli bajarildi",true,optionalProduct.get());
     }
 
 
     //DELETE
-    public Result deleteProduct(Integer id){
+    public Result delete(Integer id){
         Optional<Product> optionalProduct = productRepository.findById(id);
         if(!optionalProduct.isPresent())
             return new Result("Mahsulot topilmadi",false);
         Product product = optionalProduct.get();
+
+        //HOW MANY TIMES DELETED
+        long numberOfDeletedProduct = productRepository.countAllByNameStartingWithAndNameEndingWith(Deleted.DELETED, product.getName())+1;
         product.setActive(false);
+        product.setName(Deleted.DELETED+numberOfDeletedProduct+":"+product.getName());
+
         productRepository.save(product);
         return new Result("Mahsulot uchirildi",true);
     }
 
 
     //PUT
-    public Result editProduct(Integer id, ProductDto productDto){
+    public Result edit(Integer id, ProductDto productDto){
         //CHECK PRODUCT
         Optional<Product> optionalProduct = productRepository.findById(id);
         if (!optionalProduct.isPresent())
@@ -118,6 +127,7 @@ public class ProductService {
         if (!optionalCategory.get().isActive())
             return new Result("Bu kategoriya uchirib yuborilgan",false);
 
+        //CHECK UNIQUE
         boolean existsByNameAndCategoryId = productRepository.existsByNameAndCategoryId(productDto.getName(),
                 productDto.getCategoryId());
         if (existsByNameAndCategoryId)

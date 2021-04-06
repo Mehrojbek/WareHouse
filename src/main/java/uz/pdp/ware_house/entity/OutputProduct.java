@@ -25,4 +25,6 @@ public class OutputProduct {
 
     @ManyToOne
     private Output output;
+
+    private boolean active=true;
 }

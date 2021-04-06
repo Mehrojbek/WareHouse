@@ -3,6 +3,7 @@ package uz.pdp.ware_house.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uz.pdp.ware_house.entity.Suplier;
+import uz.pdp.ware_house.payload.Deleted;
 import uz.pdp.ware_house.payload.Result;
 import uz.pdp.ware_house.repository.SuplierRepository;
 
@@ -17,6 +18,10 @@ public class SuplierService {
 
     //CREATE
     public Result add(Suplier suplier){
+        //CHECK SPECIAL NAME
+        if (suplier.getPhoneNumber().startsWith(Deleted.DELETED))
+            return new Result("Telefon raqami "+Deleted.DELETED+" bilan boshlanishi mumkin emas",false);
+
         //CHECK UNIQUE PHONE NUMBER
         boolean existsByPhoneNumber = suplierRepository.existsByPhoneNumber(suplier.getPhoneNumber());
         if (existsByPhoneNumber)
@@ -46,7 +51,15 @@ public class SuplierService {
         Optional<Suplier> optionalSuplier = suplierRepository.findById(id);
         if (!optionalSuplier.isPresent())
             return new Result("Yetkazib beruvchi topilmadi",false);
-        return new Result("Muvaffaqiyatli bajarildi",true,optionalSuplier.get());
+        Suplier suplier = optionalSuplier.get();
+
+        //HOW MANY TIMES DELETED
+        long numberOfDeletedSuplier = suplierRepository.countAllByPhoneNumberStartingWithAndPhoneNumberEndingWith(Deleted.DELETED, suplier.getPhoneNumber())+1;
+        suplier.setActive(false);
+        suplier.setPhoneNumber(Deleted.DELETED+numberOfDeletedSuplier+":"+suplier.getPhoneNumber());
+
+        suplierRepository.save(suplier);
+        return new Result("Muvaffaqiyatli uchirildi",true);
     }
 
 

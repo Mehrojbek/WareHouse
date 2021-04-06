@@ -3,6 +3,7 @@ package uz.pdp.ware_house.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uz.pdp.ware_house.entity.WareHouse;
+import uz.pdp.ware_house.payload.Deleted;
 import uz.pdp.ware_house.payload.Result;
 import uz.pdp.ware_house.repository.WareHouseRepository;
 
@@ -16,6 +17,11 @@ public class WareHouseService {
 
     //CREATE
     public Result add(WareHouse wareHouse){
+        //CHECK SPECIAL NAME
+        if (wareHouse.getName().startsWith(Deleted.DELETED))
+            return new Result("Ombor nomi "+Deleted.DELETED+" bilan boshlanmasligi lozim",false);
+
+        //CHECK ALLREADY EXIST
         boolean existsByName = wareHouseRepository.existsByName(wareHouse.getName());
         if (existsByName)
             return new Result("Ushbu ombor alaqachon qo'shilgan",false);
@@ -45,7 +51,13 @@ public class WareHouseService {
         if (!optionalWareHouse.isPresent())
             return new Result("Ombor topilmadi",false);
         WareHouse wareHouse = optionalWareHouse.get();
+
+        //HOW MANY TIMES DELETED
+        long numberOfDeletedWareHouse = wareHouseRepository.countAllByNameStartingWithAndNameEndingWith(Deleted.DELETED, wareHouse.getName())+1;
         wareHouse.setActive(false);
+        wareHouse.setName(Deleted.DELETED+numberOfDeletedWareHouse+":"+wareHouse.getName());
+
+        wareHouseRepository.save(wareHouse);
         return new Result("Ombor uchirildi",true);
     }
 
@@ -55,13 +67,16 @@ public class WareHouseService {
         Optional<WareHouse> optionalWareHouse = wareHouseRepository.findById(id);
         if (!optionalWareHouse.isPresent())
             return new Result("Ombor topilmadi",false);
-        WareHouse editingWareHouse = optionalWareHouse.get();
-         if (editingWareHouse.getName().equals(wareHouse.getName()))
-             return new Result("Ombor muvaffaqiyatli o'zgartirildi",true);
 
-        boolean existsByName = wareHouseRepository.existsByName(wareHouse.getName());
-        if (existsByName)
-            return new Result("Ushbu ombor avval kiritilgan",false);
+        WareHouse editingWareHouse = optionalWareHouse.get();
+        //CHECK NEW NAME EQUALS CURRENT NAME
+         if (!editingWareHouse.getName().equals(wareHouse.getName())) {
+             //CHECK NEW NAME ALLREADY EXIST
+             boolean existsByName = wareHouseRepository.existsByName(wareHouse.getName());
+             if (existsByName)
+             return new Result("Ushbu ombor avval kiritilgan", false);
+         }
+
         editingWareHouse.setName(wareHouse.getName());
         wareHouseRepository.save(editingWareHouse);
         return new Result("Ombor muvaffaqiyatli o'zhartirildi",true);

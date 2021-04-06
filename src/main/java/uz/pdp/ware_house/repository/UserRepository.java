@@ -9,4 +9,5 @@ public interface UserRepository extends JpaRepository<User,Integer> {
 
         @Query(value = "select max(id) from users",nativeQuery = true)
         Integer getMaxId();
+        long countAllByPhoneNumberStartingWithAndPhoneNumberEndingWith(String deleted, String phoneNumber);
 }

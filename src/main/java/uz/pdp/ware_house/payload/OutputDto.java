@@ -2,12 +2,10 @@ package uz.pdp.ware_house.payload;
 
 import lombok.Data;
 
-import java.sql.Date;
-
 @Data
-public class InputDto {
+public class OutputDto {
     private Integer wareHouseId;
-    private Integer suplierId;
-    private Integer currencyId;
+    private Integer CurrencyId;
     private String factureNumber;
+    private Integer cientId;
 }

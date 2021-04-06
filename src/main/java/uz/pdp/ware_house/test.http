@@ -1,2 +1,158 @@
+GET http://localhost:8080/wareHouse
+###
+POST http://localhost:8080/wareHouse
+Content-Type: application/json
+
+{
+  "name": "ombor-4"
+}
+###
+DELETE http://localhost:8080/wareHouse/5
+###
+
+//USER
+GET http://localhost:8080/user
+###
+POST http://localhost:8080/user
+Content-Type: application/json
+
+{
+  "firstName": "Olim",
+  "lastName": "Olimov",
+  "phoneNumber": "998991234560",
+  "password": "12345",
+  "wareHouseList": [2,3]
+}
+###
+DELETE http://localhost:8080/user/3
+###
+
+//SUPLIER
 GET http://localhost:8080/suplier
 ###
+POST http://localhost:8080/suplier
+Content-Type: application/json
+
+{
+  "name": "Abdulla",
+  "phoneNumber": "998901234561"
+}
+###
+DELETE http://localhost:8080/suplier/6
+###
+
+//CLIENT
+GET http://localhost:8080/client
+###
+POST http://localhost:8080/client
+Content-Type: application/json
+
+{
+  "name": "Abdulla",
+  "phoneNumber": "998901234564"
+}
+###
+DELETE http://localhost:8080/client/5
+###
+//CURRENCY
+GET http://localhost:8080/currency
+###
+POST http://localhost:8080/currency
+Content-Type: application/json
+
+{
+  "name": "Rubl"
+}
+###
+DELETE http://localhost:8080/currency/5
+###
+
+//MEASUREMENT
+GET http://localhost:8080/measurement
+###
+POST http://localhost:8080/measurement
+Content-Type: application/json
+
+{
+  "name": "Metr kvadrat"
+}
+###
+DELETE http://localhost:8080/measurement/7
+###
+
+
+//CATEGORY
+GET http://localhost:8080/category
+###
+POST http://localhost:8080/category
+Content-Type: application/json
+
+{
+   "name": "Oziq-ovqat",
+  "parentCategoryId": null
+}
+###
+DELETE http://localhost:8080/category/3
+###
+PUT http://localhost:8080/category/14
+Content-Type: application/json
+
+{
+  "name": "Noutbuk",
+  "parentCategoryId": 9
+}
+###
+//ATTACHMENT
+GET http://localhost:8080/attachment
+###
+//PRODUCT
+GET http://localhost:8080/product
+###
+POST http://localhost:8080/product
+Content-Type: application/json
+
+{
+  "name": "Yog'",
+  "categoryId": 15,
+  "photoId": 1,
+  "measurementId": 1
+}
+###
+DELETE http://localhost:8080/product/4
+###
+
+
+//INPUT
+GET http://localhost:8080/input
+###
+POST http://localhost:8080/input
+Content-Type: application/json
+
+{
+   "wareHouseId": 1,
+  "suplierId": 1,
+  "currencyId": 1,
+  "factureNumber": "1235"
+}
+###
+
+//INPUT PRODUCT
+GET http://localhost:8080/inputProduct
+###
+POST http://localhost:8080/inputProduct
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "amount": 25,
+  "price": 5200,
+  "expireDate":"2021-04-07",
+  "inputId": 1
+}
+###
+GET http://localhost:8080/dashboard
+
+
+
+
+

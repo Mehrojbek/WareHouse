@@ -10,6 +10,8 @@ public interface ProductRepository extends JpaRepository<Product,Integer> {
     @Query(value = "select max(id) from product",nativeQuery = true)
     Integer getMaxId();
 
-    boolean existsByCode(String code);
+    long countAllByNameStartingWithAndNameEndingWith(String deleted, String name);
+
+
 
 }

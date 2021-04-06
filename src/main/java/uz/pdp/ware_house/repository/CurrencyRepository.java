@@ -5,4 +5,5 @@ import uz.pdp.ware_house.entity.Currency;
 
 public interface CurrencyRepository extends JpaRepository<Currency,Integer> {
     boolean existsByName(String name);
+    long countAllByNameStartingWithAndNameEndingWith(String deleted, String name);
 }

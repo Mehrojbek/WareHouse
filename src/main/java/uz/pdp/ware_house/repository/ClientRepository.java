@@ -5,4 +5,5 @@ import uz.pdp.ware_house.entity.Client;
 
 public interface ClientRepository extends JpaRepository<Client,Integer> {
     boolean existsByPhoneNumber(String phoneNumber);
+    long countAllByPhoneNumberStartingWithAndPhoneNumberEndingWith(String deleted, String phoneNumber);
 }

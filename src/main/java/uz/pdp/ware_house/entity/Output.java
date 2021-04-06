@@ -32,4 +32,6 @@ public class Output {
 
     @ManyToOne
     private Client client;
+
+    private boolean active=true;
 }

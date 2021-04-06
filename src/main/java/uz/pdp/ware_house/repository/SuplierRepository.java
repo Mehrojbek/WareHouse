@@ -5,4 +5,5 @@ import uz.pdp.ware_house.entity.Suplier;
 
 public interface SuplierRepository extends JpaRepository<Suplier,Integer> {
     boolean existsByPhoneNumber(String phoneNumber);
+    long countAllByPhoneNumberStartingWithAndPhoneNumberEndingWith(String deleted, String phoneNumber);
 }

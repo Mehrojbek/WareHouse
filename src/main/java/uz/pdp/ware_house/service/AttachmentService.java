@@ -14,6 +14,7 @@ import uz.pdp.ware_house.repository.AttachmentRepository;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -47,7 +48,7 @@ public class AttachmentService {
     }
 
 
-    //READ
+    //READ FILE
     @SneakyThrows
     public Result getFile(Integer id, HttpServletResponse response){
         Optional<Attachment> optionalAttachment = attachmentRepository.findById(id);
@@ -65,5 +66,12 @@ public class AttachmentService {
         }
         return new Result("File topilmadi",false);
     }
+
+
+    //READ ALL ATTACHMENT
+    public List<Attachment> getAll(){
+        return attachmentRepository.findAll();
+    }
+
 
 }
