@@ -4,10 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DashboardInputProductDto {
+@Data
+public class DashboardOutputProductDto {
     private Integer howManyTimes;
     private String name;
     private Double amount;

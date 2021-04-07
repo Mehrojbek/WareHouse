@@ -4,9 +4,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import uz.pdp.ware_house.entity.Input;
 import uz.pdp.ware_house.entity.InputProduct;
 
+import java.sql.Date;
 import java.util.*;
 
 public interface InputProductRepository extends JpaRepository<InputProduct,Integer> {
 
         List<InputProduct> findAllByInputId(Integer input_id);
+
+        List<InputProduct> findAllByExpireDateBeforeAndActive(Date expireDate, boolean active);
 }

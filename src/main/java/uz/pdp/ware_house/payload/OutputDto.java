@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class OutputDto {
     private Integer wareHouseId;
-    private Integer CurrencyId;
+    private Integer currencyId;
     private String factureNumber;
     private Integer cientId;
 }

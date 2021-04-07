@@ -17,14 +17,17 @@ public class WareHouseService {
 
     //CREATE
     public Result add(WareHouse wareHouse){
-        //CHECK SPECIAL NAME
-        if (wareHouse.getName().startsWith(Deleted.DELETED))
-            return new Result("Ombor nomi "+Deleted.DELETED+" bilan boshlanmasligi lozim",false);
 
         //CHECK ALLREADY EXIST
         boolean existsByName = wareHouseRepository.existsByName(wareHouse.getName());
-        if (existsByName)
+        if (existsByName){
+            WareHouse byName = wareHouseRepository.findByName(wareHouse.getName());
+            if (byName.isActive())
             return new Result("Ushbu ombor alaqachon qo'shilgan",false);
+            wareHouseRepository.save(byName);
+            return new Result("Ombor muvaffaqiyatli qo'shildi",true);
+        }
+
         wareHouseRepository.save(wareHouse);
         return new Result("Ombor muvaffaqiyatli qo'shildi",true);
     }
@@ -51,12 +54,7 @@ public class WareHouseService {
         if (!optionalWareHouse.isPresent())
             return new Result("Ombor topilmadi",false);
         WareHouse wareHouse = optionalWareHouse.get();
-
-        //HOW MANY TIMES DELETED
-        long numberOfDeletedWareHouse = wareHouseRepository.countAllByNameStartingWithAndNameEndingWith(Deleted.DELETED, wareHouse.getName())+1;
         wareHouse.setActive(false);
-        wareHouse.setName(Deleted.DELETED+numberOfDeletedWareHouse+":"+wareHouse.getName());
-
         wareHouseRepository.save(wareHouse);
         return new Result("Ombor uchirildi",true);
     }

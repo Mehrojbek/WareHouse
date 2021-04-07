@@ -115,10 +115,10 @@ Content-Type: application/json
   "name": "Yog'",
   "categoryId": 15,
   "photoId": 1,
-  "measurementId": 1
+  "measurementId": 2
 }
 ###
-DELETE http://localhost:8080/product/4
+DELETE http://localhost:8080/product/5
 ###
 
 
@@ -143,14 +143,46 @@ POST http://localhost:8080/inputProduct
 Content-Type: application/json
 
 {
-  "productId": 1,
-  "amount": 25,
-  "price": 5200,
+  "productId": 2,
+  "amount": 125,
+  "price": 3700,
   "expireDate":"2021-04-07",
-  "inputId": 1
+  "inputId": 3
+}
+###
+
+//OUTPUT
+GET http://localhost:8080/output
+###
+POST http://localhost:8080/output
+Content-Type: application/json
+
+{
+  "wareHouseId": 1,
+  "currencyId": 1,
+  "factureNumber": "15632",
+  "cientId": 1
+}
+###
+
+
+//OUTPUT PRODUCT
+GET http://localhost:8080/outputProduct
+###
+POST http://localhost:8080/outputProduct
+Content-Type: application/json
+
+{
+  "productId": 6,
+  "amount": 14,
+  "price": 5140,
+  "outputId": 3
 }
 ###
 GET http://localhost:8080/dashboard
+###
+
+
 
 
 

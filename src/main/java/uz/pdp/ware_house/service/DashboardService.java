@@ -2,23 +2,20 @@ package uz.pdp.ware_house.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uz.pdp.ware_house.entity.Input;
-import uz.pdp.ware_house.entity.InputProduct;
-import uz.pdp.ware_house.entity.Product;
+import uz.pdp.ware_house.entity.*;
 import uz.pdp.ware_house.payload.DashboardDto;
 import uz.pdp.ware_house.payload.DashboardInputProductDto;
+import uz.pdp.ware_house.payload.DashboardOutputProductDto;
 import uz.pdp.ware_house.repository.InputProductRepository;
 import uz.pdp.ware_house.repository.InputRepository;
+import uz.pdp.ware_house.repository.OutputProductRepository;
+import uz.pdp.ware_house.repository.OutputRepository;
 
+import java.sql.Date;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 
 @Service
@@ -27,40 +24,125 @@ public class DashboardService {
     InputProductRepository inputProductRepository;
     @Autowired
     InputRepository inputRepository;
+    @Autowired
+    OutputProductRepository outputProductRepository;
+    @Autowired
+    OutputRepository outputRepository;
+
+    Integer timeSetByAdmin=3;
 
     //GET GENERAL INFO
     public DashboardDto getGeneralInfo() {
-        DashboardDto dashboardDto=new DashboardDto();
-        HashSet<Product> productHashSet=new HashSet<>();
-        List<InputProduct> inputProducts=new ArrayList<>();
-        List<DashboardInputProductDto> inputProductDtos=new ArrayList<>();
-        LocalDate date=LocalDate.now(ZoneId.of("Asia/Tashkent"));
-        Timestamp start=Timestamp.valueOf(LocalDateTime.of(date, LocalTime.MIN));
-        Timestamp end=Timestamp.valueOf(LocalDateTime.of(date,LocalTime.MAX));
 
-        List<Input> allByDateBetween = inputRepository.findAllByDateBetween(start, end);
-        for (Input input : allByDateBetween) {
-            List<InputProduct> allByInputId = inputProductRepository.findAllByInputId(input.getId());
-            if (allByInputId!=null){
-                inputProducts.addAll(allByInputId);
+        DashboardDto dashboardDto = new DashboardDto();
+
+        List<InputProduct> inputProducts = new ArrayList<>();
+        List<DashboardInputProductDto> dashboardInputProductDtoList = new ArrayList<>();
+
+        LocalDate date = LocalDate.now(ZoneId.of("Asia/Tashkent"));
+        Timestamp start = Timestamp.valueOf(LocalDateTime.of(date, LocalTime.MIN));
+        Timestamp end = Timestamp.valueOf(LocalDateTime.of(date, LocalTime.MAX));
+
+        //INPUT INPUT PRODUCT ALL INFORMATION START
+        //GET ALL INPUTS OF CURRENT DAY
+        List<Input> allInputOfDay = inputRepository.findAllByDateBetween(start, end);
+        for (Input input : allInputOfDay) {
+            //GET ALL INPUT PRODUCTS OF CURRENT INPUT
+            List<InputProduct> allInputProductOfInput = inputProductRepository.findAllByInputId(input.getId());
+            if (allInputProductOfInput != null) {
+                inputProducts.addAll(allInputProductOfInput);
             }
         }
 
-        for (int i = 0; i < inputProducts.size(); i++) {
-            InputProduct inputProduct = inputProducts.get(i);
+        for (InputProduct inputProduct : inputProducts) {
             Product product = inputProduct.getProduct();
-            if (productHashSet.add(product)) {
-                inputProductDtos.add(new DashboardInputProductDto(product.getName(), inputProduct.getAmount(), inputProduct.getPrice()));
-            }else {
-                for (DashboardInputProductDto inputProductDto : inputProductDtos) {
-                    if (inputProductDto.getName().equals(product.getName())) {
-                        inputProductDto.setPrice(inputProduct.getPrice()+ inputProductDto.getPrice());
-                        inputProductDto.setAmount(inputProduct.getAmount()+ inputProductDto.getAmount());
-                    }
+            Double price = inputProduct.getPrice() * inputProduct.getAmount();
+            //CHECK INPUT PRODUCT ALREADY EXIST IN LIST
+            for (int i = 0; i < dashboardInputProductDtoList.size(); i++) {
+                if (dashboardInputProductDtoList.get(i).getName().equals(product.getName())) {
+                    DashboardInputProductDto currentDashboardDto = dashboardInputProductDtoList.get(i);
+                    currentDashboardDto.setAmount(currentDashboardDto.getAmount() + inputProduct.getAmount());
+                    currentDashboardDto.setPrice(currentDashboardDto.getPrice() + price);
+                    currentDashboardDto.setHowManyTimes(currentDashboardDto.getHowManyTimes() + 1);
+                    dashboardInputProductDtoList.set(i, currentDashboardDto);
+                    break;
+                }
+                //LAST INPUT PRODUCT
+                if (i == (dashboardInputProductDtoList.size() - 1)) {
+                    dashboardInputProductDtoList.add(new DashboardInputProductDto(1, product.getName(), inputProduct.getAmount(), price));
+                    break;
                 }
             }
+            //FIRST ADD INFO
+            if (dashboardInputProductDtoList.isEmpty()) {
+                dashboardInputProductDtoList.add(new DashboardInputProductDto(1, product.getName(), inputProduct.getAmount(), price));
+            }
+        }
+        //SORT BY PRICE DESCENDING
+        dashboardInputProductDtoList.sort((o1, o2) -> o2.getPrice().compareTo(o1.getPrice()));
+        //INPUT INPUT PRODUCT ALL INFORMATION END
+
+
+        //TOP OUTPUT PRODUCT ALL INFORMATION START
+        ArrayList<OutputProduct> outputProducts = new ArrayList<>();
+        ArrayList<DashboardOutputProductDto> dashboardOutputProductDtoList = new ArrayList<>();
+
+        //GET ALL OUTPUT CURRENT DAY
+        List<Output> allOutputOfDay = outputRepository.findAllByDateBetween(start, end);
+        for (Output output : allOutputOfDay) {
+            //GET ALL OUTPUT PRODUCT CURRENT OUTPUT
+            List<OutputProduct> allOutputProductOfOutput = outputProductRepository.findAllByOutputId(output.getId());
+            if (allOutputProductOfOutput != null) {
+                outputProducts.addAll(allOutputProductOfOutput);
+            }
         }
 
+        //ADD ALL OUTPUT PRODUCT TO LIST
+        for (OutputProduct outputProduct : outputProducts) {
+            Product product = outputProduct.getProduct();
+            Double price = outputProduct.getPrice() * outputProduct.getAmount();
+            //CHECK OUTPUT PRODUCT ALREADY EXIST IN LIST
+            for (int i = 0; i < dashboardOutputProductDtoList.size(); i++) {
+                if (dashboardOutputProductDtoList.get(i).getName().equals(product.getName())) {
+                    DashboardOutputProductDto currentDashboardOutputDto = dashboardOutputProductDtoList.get(i);
+                    currentDashboardOutputDto.setPrice(currentDashboardOutputDto.getPrice() + price);
+                    currentDashboardOutputDto.setAmount(currentDashboardOutputDto.getAmount() + outputProduct.getAmount());
+                    currentDashboardOutputDto.setHowManyTimes(currentDashboardOutputDto.getHowManyTimes() + 1);
+                    break;
+                }
+                if (i == (dashboardOutputProductDtoList.size() - 1)) {
+                    dashboardOutputProductDtoList.add(new DashboardOutputProductDto(1, product.getName(), outputProduct.getAmount(), price));
+                    break;
+                }
+            }
+            //FIRST OUTPUT PRODUCT ADD TO LIST
+            if (dashboardOutputProductDtoList.isEmpty()) {
+                dashboardOutputProductDtoList.add(new DashboardOutputProductDto(1, product.getName(), outputProduct.getAmount(), price));
+            }
+        }
+
+        //SORT BY HOW MANY TIMES DESCENDING
+        dashboardOutputProductDtoList.sort((o1, o2) -> o2.getHowManyTimes().compareTo(o1.getHowManyTimes()));
+        //TOP OUTPUT PRODUCT ALL INFORMATION END
+
+
+        //CHECK EXPIRE DATE START
+        Date beforeDate=Date.valueOf(date.plusDays(timeSetByAdmin));
+        List<InputProduct> allInputProductWithExpireDate = inputProductRepository.findAllByExpireDateBeforeAndActive(beforeDate,true);
+        //CHECK EXPIRE DATE END
+
+
+        dashboardDto.setOutputProductDtos(dashboardOutputProductDtoList);
+        dashboardDto.setInputProductDtos(dashboardInputProductDtoList);
+        dashboardDto.setProductListWithExpireDate(allInputProductWithExpireDate.size());
+
         return dashboardDto;
+    }
+
+
+    //GET EXPIRE DATE LESS THAN ANY DATE
+    public List<InputProduct> getAllExpireDateLess(){
+        Date beforeDate =Date.valueOf(LocalDate.now(ZoneId.of("Asia/Tashkent")).plusDays(timeSetByAdmin));
+        return inputProductRepository.findAllByExpireDateBeforeAndActive(beforeDate,true);
     }
 }

@@ -5,6 +5,6 @@ import uz.pdp.ware_house.entity.Measurement;
 
 public interface MeasurementRepository extends JpaRepository<Measurement,Integer> {
     boolean existsByName(String name);
-    long countAllByNameStartingWithAndNameEndingWith(String deleted, String name);
+    Measurement findByName(String name);
 
 }

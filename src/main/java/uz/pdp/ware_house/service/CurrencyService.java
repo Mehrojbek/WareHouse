@@ -18,15 +18,16 @@ public class CurrencyService {
 
     //CREATE
     public Result add(Currency currency) {
-        //CHECK SPECIAL NAME
-        if (currency.getName().startsWith(Deleted.DELETED))
-            return new Result("Valyuta nomi " + Deleted.DELETED + " so'zi bilan boshlanmasligi lozim", false);
-
         //CHECK UNIQUE NAME
         boolean existsByName = currencyRepository.existsByName(currency.getName());
-        if (existsByName)
+        if (existsByName) {
+            Currency byName = currencyRepository.findAllByName(currency.getName());
+            if (byName.isActive())
             return new Result("Bu valyuta avval kiritilgan", false);
-
+            byName.setActive(true);
+            currencyRepository.save(byName);
+            return new Result("Valyuta mavaffaqiyatli saqlandi", true);
+        }
         currencyRepository.save(currency);
         return new Result("Valyuta mavaffaqiyatli saqlandi", true);
     }
@@ -53,14 +54,7 @@ public class CurrencyService {
             return new Result("Valyuta topilmadi", false);
 
         Currency currency = optionalCurrency.get();
-        if (!currency.isActive())
-            return new Result("Bu valyuta allaqachon uchirilgan", false);
-
-        //HOW MANY TIMES DELETED
-        long numberOfDeletedCurrency = currencyRepository.countAllByNameStartingWithAndNameEndingWith(Deleted.DELETED, currency.getName()) + 1;
-
         currency.setActive(false);
-        currency.setName(Deleted.DELETED + numberOfDeletedCurrency + ":" + currency.getName());
 
         currencyRepository.save(currency);
         return new Result("Valyuta muvaffaqiyatli uchirildi", true);

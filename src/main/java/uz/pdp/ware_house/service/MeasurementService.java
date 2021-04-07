@@ -18,14 +18,16 @@ public class MeasurementService {
 
     //CREATE
     public Result addMeasurement(Measurement measurement) {
-        //CHECK SPECIAL STARTING WITH
-        if (measurement.getName().startsWith(Deleted.DELETED))
-            return new Result("O'lchov birligi nomi "+Deleted.DELETED+" bilan bhoslanmasligi lozim",false);
 
         boolean existsByName = measurementRepository.existsByName(measurement.getName());
-        if (existsByName)
+        if (existsByName){
+            Measurement byName = measurementRepository.findByName(measurement.getName());
+            if (byName.isActive())
             return new Result("Bu o'lchov birligi avval qo'shilgan", false);
-
+            byName.setActive(true);
+            measurementRepository.save(byName);
+            return new Result("O'lchov birligi muvaffaqiyatli qo'shildi", true);
+        }
         measurementRepository.save(measurement);
         return new Result("O'lchov birligi muvaffaqiyatli qo'shildi", true);
     }
@@ -52,13 +54,7 @@ public class MeasurementService {
             return new Result("Ushbu o'lchov birligi topilmadi", false);
 
         Measurement measurement = optionalMeasurement.get();
-
-        //HOW MANY TIMES DELETED
-        long numberOfDeletedMeasurement = measurementRepository.countAllByNameStartingWithAndNameEndingWith(Deleted.DELETED, measurement.getName()) + 1;
-
         measurement.setActive(false);
-        measurement.setName(Deleted.DELETED + numberOfDeletedMeasurement + ":" + measurement.getName());
-
         measurementRepository.save(measurement);
         return new Result("Ushbu o'lchov birligi muvaffaqiyatli uchirildi", true);
     }
